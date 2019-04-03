@@ -179,7 +179,7 @@ void update_levels( void )
   // I'm adding together 3 fft bins to increase the range.
   for (i = 0; i < FREQ_BINS; i++)
   {
-    level[i] = 1000.0 * fft.read(i*3, i*3+2);
+    level[i] = 100.0 * fft.read(i*3, i*3+2);
   }
 }
 
@@ -192,13 +192,13 @@ void loop()
     
     if (fft.available()) 
     {
-        update_levels();
-        print_levels();
-        while (!Serial.available());
-        while (Serial.available()) char c=Serial.read();
-       
         //update_levels();
-        //display_freq_decay();
+        //print_levels();
+        //while (!Serial.available());
+        //while (Serial.available()) char c=Serial.read();
+       
+        update_levels();
+        display_freq_decay();
     }
 
 }
