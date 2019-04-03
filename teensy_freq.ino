@@ -41,13 +41,63 @@ CRGB palette[21];
 
 #define FREQ_BINS 21
 
-// An array to hold the frequency bins
+// An array to hold the instantaneous frequency bin data
 float level[FREQ_BINS];
 
 // This array holds the on-screen levels.  When the signal drops quickly,
 // these are used to lower the on-screen level 1 bar per update, which
 // looks more pleasing to corresponds to human sound perception.
 int freq_hist[FREQ_BINS];
+
+float eq[FREQ_BINS] =
+{
+  1.0,   // Bin 0
+  1.0,   // Bin 1
+  1.0,   // Bin 2
+  1.0,   // Bin 3
+  1.0,   // Bin 4
+  1.0,   // Bin 5
+  1.0,   // Bin 6
+  1.0,   // Bin 7
+  1.0,   // Bin 8
+  2.0,   // Bin 9
+  2.0,   // Bin 10
+  2.0,   // Bin 11
+  2.0,   // Bin 12
+  2.0,   // Bin 13
+  2.0,   // Bin 14
+  2.0,   // Bin 15
+  2.0,   // Bin 16
+  2.0,   // Bin 17
+  2.0,   // Bin 18
+  2.0,   // Bin 19
+  2.0    // Bin 20
+};
+
+int dc[FREQ_BINS] =
+{
+  0,   // Bin 0
+  0,   // Bin 1
+  0,   // Bin 2
+  0,   // Bin 3
+  0,   // Bin 4
+  0,   // Bin 5
+  0,   // Bin 6
+  0,   // Bin 7
+  0,   // Bin 8
+  1,   // Bin 9
+  1,   // Bin 10
+  1,   // Bin 11
+  1,   // Bin 12
+  1,   // Bin 13
+  1,   // Bin 14
+  1,   // Bin 15
+  1,   // Bin 16
+  1,   // Bin 17
+  1,   // Bin 18
+  1,   // Bin 19
+  1    // Bin 20
+};
 
 
 void init_palette( void )
@@ -179,7 +229,8 @@ void update_levels( void )
   // I'm adding together 3 fft bins to increase the range.
   for (i = 0; i < FREQ_BINS; i++)
   {
-    level[i] = 100.0 * fft.read(i*3, i*3+2);
+    level[i] = eq[i] * 100.0 * fft.read(i*3, i*3+2);
+    level[i] = level[i] - (float) dc[i];
   }
 }
 
