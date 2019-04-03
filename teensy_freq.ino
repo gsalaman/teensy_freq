@@ -3,6 +3,7 @@
  *   Chaining the two 64x32s sorta works, but if you set the width to 128, the FFT never complete
  *   (guessing interrupt contention).  96 works, but that then has a weird overlap.
  *   So, I'm sticking with just one 64 x 32.
+ *   Doing bars of widtch 3, which means 21 bins (64/3 = 21.3)
  */
 
 // all these libraries are required for the Teensy Audio Library
@@ -38,17 +39,16 @@ AudioConnection          audioConnection(input, 0, fft, 0);
 
 CRGB palette[21];
 
-int freq_gain = 100;
+#define FREQ_BINS 21
 
 // An array to hold the frequency bins
-float level[64];
+float level[FREQ_BINS];
 
 // This array holds the on-screen levels.  When the signal drops quickly,
 // these are used to lower the on-screen level 1 bar per update, which
 // looks more pleasing to corresponds to human sound perception.
-int freq_hist[64];
+int freq_hist[FREQ_BINS];
 
-const SM_RGB black = CRGB(0, 0, 0);
 
 void init_palette( void )
 {
@@ -73,13 +73,7 @@ void setup()
 
     // Audio requires memory to work.
     AudioMemory(12);
-/*
-  scrollingLayer.setColor({0xff,0,0});
-  scrollingLayer.setMode(stopped);
-  scrollingLayer.setSpeed(40);
-  scrollingLayer.setFont(font6x10);
-  scrollingLayer.start("Glenn Rules", -1);
-  */
+
 }
 
 void print_fft( void )
@@ -105,7 +99,7 @@ void print_levels( void )
 {
   int i;
   
-  for (i=0; i<42; i++)
+  for (i=0; i<FREQ_BINS; i++)
   {  
     Serial.print("Bin ");
     Serial.print(i);
@@ -122,12 +116,11 @@ void display_freq_raw( void )
   int mag;
   int bin;
   int x;
-  rgb24 color = {0, 0, 50};
   rgb24 black = {0,0,0};
 
   backgroundLayer.fillScreen(black);
 
-  for (i = 0; i < 21; i++)
+  for (i = 0; i < FREQ_BINS; i++)
   {
     // level[i] is an adjusted float...looks like a gain of about 100 will be right, but I want to play with that.
     mag = level[i];
@@ -155,7 +148,7 @@ void display_freq_decay( void )
 
   backgroundLayer.fillScreen(black);
 
-  for (i = 0; i < 21; i++)
+  for (i = 0; i < FREQ_BINS; i++)
   {
     // level[i] is an adjusted float...looks like a gain of about 100 will be right, but I want to play with that.
     mag = level[i];
@@ -183,8 +176,8 @@ void update_levels( void )
 {
   int i;
   
-  // starting with just the bottom 42 bins...but I'm adding together 3 fft bins to increase the range.
-  for (i = 0; i < 42; i++)
+  // I'm adding together 3 fft bins to increase the range.
+  for (i = 0; i < FREQ_BINS; i++)
   {
     level[i] = 1000.0 * fft.read(i*3, i*3+2);
   }
@@ -196,7 +189,6 @@ void loop()
     int bin;
     int x;
     int y;
-    rgb24 color = {0xff,0,0};
     
     if (fft.available()) 
     {
